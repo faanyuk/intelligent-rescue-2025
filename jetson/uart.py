@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2025 Yu Fan and Qixuan Qin
+# SPDX-License-Identifier: MIT
 # -----------------------------------------------------------------------------
 # 文件: uart.py
 # 功能: 基于UART协议的电机与舵机控制核心模块
@@ -7,11 +9,12 @@
 # 团队: 北京建筑大学工程实践创新中心314工作室
 # 创建日期: 2025-07-05
 # -----------------------------------------------------------------------------
+import threading
+import time
+from typing import List, Optional
+
 import serial
 from serial.serialutil import SerialException
-import threading
-from typing import Optional, List
-import time
 
 
 class UARTController:
@@ -43,14 +46,13 @@ class UARTController:
                     bytesize=serial.EIGHTBITS,
                     parity=serial.PARITY_NONE,
                     stopbits=serial.STOPBITS_ONE,
-                    timeout=0.5
+                    timeout=0.5,
                 )
                 print(f"UART 已连接: {serial_port}@{baudrate}bps")
                 # 启动读取线程（直接覆盖模式）
                 self._running = True
                 self._read_thread = threading.Thread(
-                    target=self._read_serial_data,
-                    daemon=True
+                    target=self._read_serial_data, daemon=True
                 )
                 self._read_thread.start()
             except Exception as e:
@@ -182,23 +184,21 @@ class UARTController:
                     self._motor_speeds[0],
                     self._motor_speeds[1],
                     self._servo_angles[0],
-                    self._servo_angles[1]
+                    self._servo_angles[1],
                 )
                 self._serial_port.write(packet)
                 self._serial_port.flush()
                 return True
             except SerialException as e:
                 print(f"[ERR] 发送失败: {e}")
-
-          
-
                 return False
 
 
 # ==============================测试程序==============================
 def main1():
-    packet = UARTController._build_pack(50,-50,100,100)
-    print("数据包:\n", packet.hex(' ').upper())
+    packet = UARTController._build_pack(50, -50, 100, 100)
+    print("数据包:\n", packet.hex(" ").upper())
+
 
 def main2():
     import glob
@@ -208,11 +208,11 @@ def main2():
         """扫描可用的串口设备"""
         ports = []
         # Windows
-        if sys.platform.startswith('win'):
-            ports = ['COM%s' % (i + 1) for i in range(256)]
+        if sys.platform.startswith("win"):
+            ports = ["COM%s" % (i + 1) for i in range(256)]
         # Linux/Mac
         else:
-            ports = glob.glob('/dev/tty[A-Za-z]*')
+            ports = glob.glob("/dev/tty[A-Za-z]*")
 
         available_ports = []
         for port in ports:
@@ -239,7 +239,7 @@ def main2():
                 print(f"{i}: {port}")
 
             # 手动选择串口
-            selected_port=None
+            selected_port = None
             while True:
                 try:
                     choice = int(input("请选择要连接的串口编号: "))
@@ -365,6 +365,7 @@ def main2():
 
     main_menu()
 
+
 def main3():
     import glob
     import sys
@@ -373,11 +374,11 @@ def main3():
         """扫描可用的串口设备"""
         ports = []
         # Windows
-        if sys.platform.startswith('win'):
-            ports = ['COM%s' % (i + 1) for i in range(256)]
+        if sys.platform.startswith("win"):
+            ports = ["COM%s" % (i + 1) for i in range(256)]
         # Linux/Mac
         else:
-            ports = glob.glob('/dev/tty[A-Za-z]*')
+            ports = glob.glob("/dev/tty[A-Za-z]*")
 
         available_ports = []
         for port in ports:
@@ -427,16 +428,15 @@ def main3():
                 print(f"连接失败: {e}")
                 continue  # 返回菜单重新选择
 
-            
             # 主控制循环
             while True:
                 cmd = controller.get_latest_cmd()
                 print("接收命令: 0x{:02X}".format(cmd))
-            
 
     main_menu()
 
-if __name__ == '__main__':
-    #main1()
+
+if __name__ == "__main__":
+    # main1()
     main2()
-    #main3() #只接收串口数据
+    # main3() #只接收串口数据

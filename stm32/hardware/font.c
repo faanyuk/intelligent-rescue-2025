@@ -7,6 +7,9 @@
  * 英文字库已包含
  * 中文字库请使用波特律动LED取模工具生成(https://led.baud-dance.com)
  * 图模也使用波特律动LED取模工具生成
+ *
+ * Third-party component. See THIRD_PARTY_NOTICES.md for provenance and
+ * licensing details. No project-level MIT grant is asserted for this file.
  */
 // clang-format off
 #include "font.h"

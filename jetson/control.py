@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2025 Yu Fan and Qixuan Qin
+# SPDX-License-Identifier: MIT
 # -----------------------------------------------------------------------------
 # 文件: control.py
 # 功能: 运动控制核心模块
@@ -7,12 +9,13 @@
 # 作者: 樊彧，覃启轩
 # 创建日期: 2025-07-05
 # -----------------------------------------------------------------------------
-from uart import UARTController
-import signal
-import time
-import sys
 import atexit
-from config import CATCH_ANGLE, RELEASE_ANGLE, UART_PORT, DEFAULT_RESOLUTION
+import signal
+import sys
+import time
+
+from config import CATCH_ANGLE, DEFAULT_RESOLUTION, RELEASE_ANGLE, UART_PORT
+from uart import UARTController
 
 frame_width, frame_height = DEFAULT_RESOLUTION
 
@@ -58,18 +61,18 @@ class Controller(UARTController):
         print("\n执行安全复位协议...")
         try:
             # 1. 停止电机（不依赖串口状态）
-            if hasattr(self, '_motor_speeds'):
+            if hasattr(self, "_motor_speeds"):
                 self.stop()
                 time.sleep(0.1)
 
             # 2. 复位舵机（不依赖串口状态）
-            if hasattr(self, '_servo_angles'):
+            if hasattr(self, "_servo_angles"):
                 self.release()
                 time.sleep(0.1)
 
             # 3. 关闭串口（严格检查）
             if self._serial_port is not None:
-                if hasattr(self._serial_port, 'is_open'):
+                if hasattr(self._serial_port, "is_open"):
                     self._serial_port.close()
                 self._serial_port = None
         except Exception as e:
@@ -197,7 +200,7 @@ class Controller(UARTController):
             turn_factor = 2.0
 
         # 初始化或更新 PID 状态
-        if not hasattr(self, '_pid_integral'):
+        if not hasattr(self, "_pid_integral"):
             self._pid_integral = 0.0
             self._pid_last_error = 0.0
             self._pid_last_time = time.time()
@@ -265,7 +268,9 @@ class Controller(UARTController):
         # 记录调试信息
         if pid_output != 0:
             print(f"PID校正: {correction:.2f} (P:{P:.2f} I:{I:.2f} D:{D:.2f})")
-        print(f"球位置: ({x:.1f}, {y:.1f}) | 左轮: {-left_speed_formatted} | 右轮: {-right_speed_formatted}")
+        print(
+            f"球位置: ({x:.1f}, {y:.1f}) | 左轮: {-left_speed_formatted} | 右轮: {-right_speed_formatted}"
+        )
 
         self.execute()
 
@@ -296,7 +301,7 @@ class Controller(UARTController):
             turn_factor = 2.0
 
         # 初始化或更新 PID 状态
-        if not hasattr(self, '_pid_integral'):
+        if not hasattr(self, "_pid_integral"):
             self._pid_integral = 0.0
             self._pid_last_error = 0.0
             self._pid_last_time = time.time()
@@ -378,6 +383,7 @@ class Controller(UARTController):
 
 # ===================== 测试程序 =====================
 
+
 # 电机测试
 def main1():
     print("开始测试电机")
@@ -435,6 +441,6 @@ def main2():
     print("舵机测试完毕\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main1()
     main2()

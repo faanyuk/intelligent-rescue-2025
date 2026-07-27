@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-FileCopyrightText: 2025 Yu Fan and Qixuan Qin
+# SPDX-License-Identifier: MIT
 # -----------------------------------------------------------------------------
 # 文件: vision.py
 # 功能: 视觉处理核心模块
@@ -7,36 +9,36 @@
 # 作者: 樊彧，覃启轩
 # 创建日期: 2025-07-05
 # -----------------------------------------------------------------------------
-import cv2
-from typing import Tuple, Optional, Dict, Any, List
-import numpy as np
 import time
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
+import cv2
+import numpy as np
 from config import (
-    VIDEO_OUTPUT_DIR,
-    SAVE_OUTPUT,
-    VIDEO_CODEC,
+    CATCH_AREA,
+    CROSS_CENTER_REGION,
     DEFAULT_FPS,
     DEFAULT_RESOLUTION,
-    CATCH_AREA,
-    READY_AREA,
     HOLDING_AREA,
-    CROSS_CENTER_REGION,
+    READY_AREA,
+    SAVE_OUTPUT,
     TEAM,
-    _ball_filter,
+    VIDEO_CODEC,
+    VIDEO_OUTPUT_DIR,
     _area_filter,
+    _ball_filter,
 )
 
 
 class VideoStream:
     def __init__(
-            self,
-            src=0,
-            width: int = DEFAULT_RESOLUTION[0],
-            height: int = DEFAULT_RESOLUTION[1],
-            fps: int = DEFAULT_FPS,
-            save_output: Optional[bool] = None
+        self,
+        src=0,
+        width: int = DEFAULT_RESOLUTION[0],
+        height: int = DEFAULT_RESOLUTION[1],
+        fps: int = DEFAULT_FPS,
+        save_output: Optional[bool] = None,
     ):
         # 确定是否保存输出
         self.save_output = save_output if save_output is not None else SAVE_OUTPUT
@@ -52,7 +54,9 @@ class VideoStream:
         self.cap.set(cv2.CAP_PROP_FPS, fps)
 
         # 初始化视频写入器
-        self.writer = self._init_video_writer(width, height) if self.save_output else None
+        self.writer = (
+            self._init_video_writer(width, height) if self.save_output else None
+        )
 
     @staticmethod
     def _init_video_writer(width: int, height: int) -> cv2.VideoWriter:
@@ -61,12 +65,7 @@ class VideoStream:
         output_path = Path(VIDEO_OUTPUT_DIR) / f"output_{timestamp}.mp4"
 
         fourcc = cv2.VideoWriter_fourcc(*VIDEO_CODEC)
-        writer = cv2.VideoWriter(
-            str(output_path),
-            fourcc,
-            DEFAULT_FPS,
-            (width, height)
-        )
+        writer = cv2.VideoWriter(str(output_path), fourcc, DEFAULT_FPS, (width, height))
 
         if not writer.isOpened():
             raise RuntimeError(f"无法创建视频写入器: {output_path}")
@@ -82,16 +81,16 @@ class VideoStream:
 
     @staticmethod
     def show_frame(
-            frame: np.ndarray,
-            results: List[Any],  # 根据实际结果类型替换Any
-            *,
-            draw_rect: bool = True,
-            confidence_threshold: float = 0.5,
-            window_name: str = "Detection",
-            rect_color: Tuple[int, int, int] = (0, 255, 0),
-            rect_thickness: int = 2,
-            show_confidence: bool = True,
-            font_scale: float = 0.6
+        frame: np.ndarray,
+        results: List[Any],  # 根据实际结果类型替换Any
+        *,
+        draw_rect: bool = True,
+        confidence_threshold: float = 0.5,
+        window_name: str = "Detection",
+        rect_color: Tuple[int, int, int] = (0, 255, 0),
+        rect_thickness: int = 2,
+        show_confidence: bool = True,
+        font_scale: float = 0.6,
     ) -> None:
         """
         显示带检测结果的帧画面（支持多种绘制选项）
@@ -133,9 +132,10 @@ class VideoStream:
                 # 绘制矩形框
                 cv2.rectangle(
                     display_frame,
-                    (x1, y1), (x2, y2),
+                    (x1, y1),
+                    (x2, y2),
                     color=rect_color,
-                    thickness=rect_thickness
+                    thickness=rect_thickness,
                 )
 
                 # 获取类别名称（兼容不同YOLO版本）
@@ -150,7 +150,7 @@ class VideoStream:
                     cv2.FONT_HERSHEY_SIMPLEX,
                     font_scale,
                     rect_color,
-                    max(1, int(font_scale * 2))
+                    max(1, int(font_scale * 2)),
                 )
 
         # 显示图像
@@ -176,16 +176,16 @@ class VideoStream:
 
 class VISION:
     def __init__(
-            self,
-            model,
-            label_balls: List[str],
-            label_area: List[str],
-            catch_area: Tuple[int, int, int, int] = CATCH_AREA,
-            ready_area: Tuple[int, int, int, int] = READY_AREA,
-            min_confidence: float = 0.5,
-            team: str = TEAM,
-            ball_filter: Dict[str, str] = _ball_filter,
-            area_filter: Dict[str, str] = _area_filter
+        self,
+        model,
+        label_balls: List[str],
+        label_area: List[str],
+        catch_area: Tuple[int, int, int, int] = CATCH_AREA,
+        ready_area: Tuple[int, int, int, int] = READY_AREA,
+        min_confidence: float = 0.5,
+        team: str = TEAM,
+        ball_filter: Dict[str, str] = _ball_filter,
+        area_filter: Dict[str, str] = _area_filter,
     ):
         self.model = model
         self.label_balls = label_balls
@@ -239,10 +239,10 @@ class VISION:
     def is_cross_in_position(self, cross_center: Tuple[float, float]) -> bool:
         """
         检查十字标记是否在指定区域
-        
+
         参数:
             cross_center: 十字标记中心坐标 (x, y)
-            
+
         返回:
             bool: 是否在指定区域内
         """
@@ -250,11 +250,10 @@ class VISION:
         x1, y1, x2, y2 = CROSS_CENTER_REGION
         return x1 <= x <= x2 and y1 <= y <= y2
 
-
     def detect_avoid_ball(
-            self,
-            results,
-            min_confidence: Optional[float] = None,
+        self,
+        results,
+        min_confidence: Optional[float] = None,
     ) -> Tuple[bool, Optional[Dict[str, Any]]]:
         """
         检测需要避开的球是否进入了抓取区域，并检查HOLDING_AREA内是否有多个球
@@ -266,7 +265,9 @@ class VISION:
         返回:
             tuple: (是否检测到, 目标信息字典)
         """
-        min_confidence = self.min_confidence if min_confidence is None else min_confidence
+        min_confidence = (
+            self.min_confidence if min_confidence is None else min_confidence
+        )
         # 获取需要避开的球的标签
         avoid_ball_label = self.ball_filter.get(self.team, "")
 
@@ -292,8 +293,10 @@ class VISION:
                 ball_center_y = (y1 + y2) / 2
 
                 # 检查球是否在HOLDING_AREA内
-                if (HOLDING_AREA[0] <= ball_center_x <= HOLDING_AREA[2] and
-                        HOLDING_AREA[1] <= ball_center_y <= HOLDING_AREA[3]):
+                if (
+                    HOLDING_AREA[0] <= ball_center_x <= HOLDING_AREA[2]
+                    and HOLDING_AREA[1] <= ball_center_y <= HOLDING_AREA[3]
+                ):
                     balls_in_holding_area += 1
 
                 # 跳过非避让球
@@ -302,8 +305,8 @@ class VISION:
 
                 # 检查球中心是否在抓取区域内 - 这才是真正的触发条件
                 ball_in_catch_area = (
-                        catch_x1 <= ball_center_x <= catch_x2 and
-                        catch_y1 <= ball_center_y <= catch_y2
+                    catch_x1 <= ball_center_x <= catch_x2
+                    and catch_y1 <= ball_center_y <= catch_y2
                 )
 
                 if ball_in_catch_area:
@@ -312,24 +315,24 @@ class VISION:
                     catch_center_y = (catch_y1 + catch_y2) / 2
                     dist_x = catch_center_x - ball_center_x
                     dist_y = catch_center_y - ball_center_y
-                    distance = (dist_x ** 2 + dist_y ** 2) ** 0.5
+                    distance = (dist_x**2 + dist_y**2) ** 0.5
 
                     return True, {
-                        'label': label,
-                        'coordinates': (x1, y1, x2, y2),
-                        'center': (ball_center_x, ball_center_y),
-                        'distance': distance,
-                        'position': "inside catch area",
-                        'balls_in_holding': balls_in_holding_area
+                        "label": label,
+                        "coordinates": (x1, y1, x2, y2),
+                        "center": (ball_center_x, ball_center_y),
+                        "distance": distance,
+                        "position": "inside catch area",
+                        "balls_in_holding": balls_in_holding_area,
                     }
 
         # 即使没有避让球在抓取区域，但如果HOLDING_AREA内有多个球，也需要避让
         if balls_in_holding_area > 1:
             print(f"警告：HOLDING_AREA内有{balls_in_holding_area}个球，执行避让")
             return True, {
-                'label': "multiple_balls",
-                'position': "in holding area",
-                'balls_in_holding': balls_in_holding_area
+                "label": "multiple_balls",
+                "position": "in holding area",
+                "balls_in_holding": balls_in_holding_area,
             }
 
         return False, None
@@ -349,10 +352,10 @@ class VISION:
         print(f"  目标区域: {self.target_areas}")
 
     def detect_closest_ball(
-            self,
-            results,
-            validity=True,  # 是否检测安全区内的球
-            min_confidence: Optional[float] = None
+        self,
+        results,
+        validity=True,  # 是否检测安全区内的球
+        min_confidence: Optional[float] = None,
     ) -> Tuple[bool, Optional[Dict[str, Any]]]:
         """
         检测最接近的目标物体（根据当前队伍）
@@ -365,7 +368,9 @@ class VISION:
             tuple: (是否检测到, 目标信息字典)
                   包含: label, confidence, coordinates, center, class_id
         """
-        min_confidence = self.min_confidence if min_confidence is None else min_confidence
+        min_confidence = (
+            self.min_confidence if min_confidence is None else min_confidence
+        )
         closest_ball = None
         max_area = 0  # 用面积作为距离代理（面积越大通常距离越近）
 
@@ -394,7 +399,9 @@ class VISION:
                 current_area = (x2 - x1) * (y2 - y1)
 
                 if validity and area_box:
-                    area_x1, area_y1, area_x2, area_y2 = area_box.xyxy[0].cpu().numpy().tolist()
+                    area_x1, area_y1, area_x2, area_y2 = (
+                        area_box.xyxy[0].cpu().numpy().tolist()
+                    )
                     # 检查四个角点是否都在安全区内
                     corners_inside = False
                     for x, y in [(x1, y1), (x2, y1), (x1, y2), (x2, y2)]:
@@ -408,21 +415,21 @@ class VISION:
                 if current_area > max_area:
                     max_area = current_area
                     closest_ball = {
-                        'label': label,
-                        'coordinates': (x1, y1, x2, y2),
-                        'center': ((x1 + x2) / 2, (y1 + y2) / 2),
-                        'class_id': cls
+                        "label": label,
+                        "coordinates": (x1, y1, x2, y2),
+                        "center": ((x1 + x2) / 2, (y1 + y2) / 2),
+                        "class_id": cls,
                     }
 
         return closest_ball is not None, closest_ball
 
     def detect_area(
-            self,
-            results,
-            min_confidence: Optional[float] = None
+        self, results, min_confidence: Optional[float] = None
     ) -> Tuple[bool, Optional[Dict[str, Any]]]:
         """检测目标区域（根据当前队伍）"""
-        min_confidence = self.min_confidence if min_confidence is None else min_confidence
+        min_confidence = (
+            self.min_confidence if min_confidence is None else min_confidence
+        )
 
         area_box = None
 
@@ -436,18 +443,16 @@ class VISION:
                     x1, y1, x2, y2 = box.xyxy[0].cpu().numpy().tolist()
 
                     area_box = {
-                        'label': label,
-                        'coordinates': (x1, y1, x2, y2),
-                        'center': ((x1 + x2) / 2, (y1 + y2) / 2),
-                        'class_id': cls
+                        "label": label,
+                        "coordinates": (x1, y1, x2, y2),
+                        "center": ((x1 + x2) / 2, (y1 + y2) / 2),
+                        "class_id": cls,
                     }
 
         return area_box is not None, area_box
 
     def get_area_center(
-            self,
-            results,
-            min_confidence: Optional[float] = None
+        self, results, min_confidence: Optional[float] = None
     ) -> Optional[Tuple[float, float]]:
         """
         获取目标安全区中心坐标（根据当前队伍）
@@ -461,14 +466,10 @@ class VISION:
         """
         found, area_info = self.detect_area(results, min_confidence)
         if found:
-            return area_info['center']
+            return area_info["center"]
         return None
 
-    def has_caught_ball(
-            self,
-            results,
-            min_confidence: Optional[float] = None
-    ) -> bool:
+    def has_caught_ball(self, results, min_confidence: Optional[float] = None) -> bool:
         """
         判断是否成功抓取到目标球体
 
@@ -481,7 +482,9 @@ class VISION:
         """
         # 解包抓取区域坐标
         catch_x1, catch_y1, catch_x2, catch_y2 = self.catch_area
-        min_confidence = self.min_confidence if min_confidence is None else min_confidence
+        min_confidence = (
+            self.min_confidence if min_confidence is None else min_confidence
+        )
 
         for result in results:
             for box in result.boxes:
@@ -497,8 +500,10 @@ class VISION:
                     ball_center_y = (y1 + y2) / 2
 
                     # 判断中心点是否在抓取区域内
-                    is_in_catch_area = (catch_x1 <= ball_center_x <= catch_x2 and
-                                        catch_y1 <= ball_center_y <= catch_y2)
+                    is_in_catch_area = (
+                        catch_x1 <= ball_center_x <= catch_x2
+                        and catch_y1 <= ball_center_y <= catch_y2
+                    )
 
                     if is_in_catch_area:
                         return True
@@ -506,9 +511,7 @@ class VISION:
 
     # 此方法不靠谱，考虑以下方案：只推球不考虑是否推进去
     def is_ready_to_release(
-            self,
-            results,
-            min_confidence: Optional[float] = None
+        self, results, min_confidence: Optional[float] = None
     ) -> bool:
         """
         严格检查球体是否从抓取区域进入安全区
@@ -522,7 +525,9 @@ class VISION:
         """
         # 解包抓取区域坐标
         catch_x1, catch_y1, catch_x2, catch_y2 = self.catch_area
-        min_confidence = self.min_confidence if min_confidence is None else min_confidence
+        min_confidence = (
+            self.min_confidence if min_confidence is None else min_confidence
+        )
 
         # 第一阶段：检查安全区是否存在
         area_box = None
@@ -550,14 +555,22 @@ class VISION:
 
                 if label in self.target_balls and conf > min_confidence:
                     # 计算球体中心
-                    ball_x1, ball_y1, ball_x2, ball_y2 = box.xyxy[0].cpu().numpy().tolist()
-                    center_x, center_y = (ball_x1 + ball_x2) / 2, (ball_y1 + ball_y2) / 2
+                    ball_x1, ball_y1, ball_x2, ball_y2 = (
+                        box.xyxy[0].cpu().numpy().tolist()
+                    )
+                    center_x, center_y = (
+                        (ball_x1 + ball_x2) / 2,
+                        (ball_y1 + ball_y2) / 2,
+                    )
 
                     # 双重条件检查
-                    in_catch = (catch_x1 <= center_x <= catch_x2 and
-                                catch_y1 <= center_y <= catch_y2)
-                    in_area = (area_x1 < center_x < area_x2 and
-                               area_y1 < center_y < area_y2)
+                    in_catch = (
+                        catch_x1 <= center_x <= catch_x2
+                        and catch_y1 <= center_y <= catch_y2
+                    )
+                    in_area = (
+                        area_x1 < center_x < area_x2 and area_y1 < center_y < area_y2
+                    )
 
                     if in_catch and in_area:
                         return True
@@ -580,13 +593,14 @@ class VISION:
 
 # ===================== 测试程序 =====================
 
+
 def main_yolo():
     import cv2
+    from config import RESCUE_MODEL, TEAM, _area_filter, _ball_filter
     from ultralytics import YOLO
-    from config import RESCUE_MODEL, TEAM, _ball_filter, _area_filter
 
     model = YOLO(str(RESCUE_MODEL))
-    model.to('cuda:0')  # 使用GPU推理
+    model.to("cuda:0")  # 使用GPU推理
     stream = VideoStream()
 
     # 初始化视觉系统
@@ -596,7 +610,7 @@ def main_yolo():
         label_area=["Blue_Placement_Zone", "Red_Placement_Zone"],
         team=TEAM,
         ball_filter=_ball_filter,
-        area_filter=_area_filter
+        area_filter=_area_filter,
     )
 
     # 初始化参数
@@ -626,7 +640,7 @@ def main_yolo():
             # 显示和保存
             stream.show_frame(frame, results, draw_rect=True)
             stream.save_frame(frame)
-            if cv2.waitKey(1) == ord('q'):
+            if cv2.waitKey(1) == ord("q"):
                 break
 
         except KeyboardInterrupt:
@@ -635,5 +649,5 @@ def main_yolo():
     stream.release()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main_yolo()

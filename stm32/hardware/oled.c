@@ -1,4 +1,6 @@
 /**
+ * SPDX-License-Identifier: MIT
+ *
  * @file oled.c
  * @brief 波特律动OLED驱动(SSD1306)
  * @anchor 波特律动(keysking 博哥在学习)
@@ -22,9 +24,11 @@
  *
  */
 #include "oled.h"
-#include "i2c.h"
+
 #include <math.h>
 #include <stdlib.h>
+
+#include "i2c.h"
 
 // OLED器件地址
 #define OLED_ADDRESS 0x78

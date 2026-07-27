@@ -16,8 +16,9 @@
 
 ```plaintext
 intelligent-rescue-2025/
-├── LICENSE                  # MIT 开源许可证
+├── LICENSE                  # 项目原创代码的 MIT 许可证
 ├── README.md                # 项目说明文档
+├── THIRD_PARTY_NOTICES.md   # 第三方代码、依赖与素材声明
 ├── images/                  # 项目展示图片
 │   ├── competition-award-2025.jpg
 │   └── rescue-robot.jpg
@@ -51,4 +52,20 @@ intelligent-rescue-2025/
 **北京建筑大学 工程实践创新中心 314 工作室**
 
 * **作者**：樊彧、覃启轩
-* **开源协议**：MIT License
+
+## 📄 许可证
+
+除下述例外外，本仓库中由樊彧、覃启轩原创并拥有版权的源代码采用 [MIT License](./LICENSE) 许可。
+
+MIT License 不适用于以下内容：
+
+- 仓库中包含或改编的第三方代码，其许可与版权归原作者所有，详见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。
+- 外部依赖，包括 Ultralytics YOLO、OpenCV、NumPy、PySerial、PyTorch 和 STM32 HAL 等；它们分别适用自身的许可证。
+- 模型权重、训练数据和数据集，除非相关目录中另有明确的许可声明。
+- `images/` 目录中的照片、证书、赛事标识和其他媒体素材。除非另有明确许可，相关权利均予保留。
+
+### Ultralytics 特别说明
+
+本项目的 Jetson 程序依赖 Ultralytics YOLO。Ultralytics 的开源版本采用 AGPL-3.0 许可，同时提供 Enterprise License。
+
+本项目原创代码的 MIT 许可不包含 Ultralytics 软件或模型，也不会免除使用者遵守 Ultralytics 许可条款的义务。分发、部署或提供包含 Ultralytics YOLO 的完整系统时，可能需要遵守 AGPL-3.0，或另行取得 Ultralytics Enterprise License。
